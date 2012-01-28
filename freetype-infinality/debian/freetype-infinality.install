@@ -1,0 +1,2 @@
+debian/freetype-infinality.default /etc/default/infinality
+debian/freetype-infinality.profile.d /etc/profile.d/freetype-infinality.sh

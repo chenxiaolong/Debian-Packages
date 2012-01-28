@@ -1,0 +1,51 @@
+Infinality Patches - 2011-12-23
+======================================================
+
+This should patch without errors to Freetype 2.4.8.  See the files themselves 
+for the changelog.  Visit infinality.net for more information and a 
+forum.
+
+Fedora users should run these commands instead of installing these files 
+manually:
+
+sudo rpm -Uvh http://www.infinality.net/fedora/linux/infinality-repo-1.0-1.noarch.rpm
+sudo yum install freetype-infinality fontconfig-infinality
+
+
+All necessary files for other distros are located here:
+http://www.infinality.net/blog/infinality-freetype-patches/
+
+
+
+Patches
+=======
+
+freetype-add-subpixel-hinting-infinality-20111223-01.patch    - Subpixel hinting patches.  Apply first.
+freetype-enable-subpixel-hinting-infinality-20100909-1.patch  - Enable subpixel hinting.   Apply second.
+freetype-entire-infinality-patchset-20111223-01.patch         - All infinality enhancements.  Apply third.
+
+
+
+
+
+Settings
+========
+
+
+fontconfig-infinality  - Customizable configuration for fontconfig.  Variables
+(separate download)      in infinality.conf can be used to dramatically affect the
+                         settings to look like different OS styles.  See README
+                         inside fontconfig-infinality zip file.
+
+
+infinality-settings.sh - Environment variables that need to be set.  This is 
+                         the place to fine tune the rendering.
+                         Suggested to save this file as:
+                         /etc/profile.d/infinality-settings.sh
+
+
+freetype-infinality.sh - This script will set the LD_PRELOAD environment
+                         variable.  Suggested to save into /etc/profile.d/
+
+
+

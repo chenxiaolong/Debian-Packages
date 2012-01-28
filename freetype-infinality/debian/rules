@@ -1,0 +1,73 @@
+#!/usr/bin/make -f
+#
+# This is free software; see the GNU General Public Licence
+# version 2 or later for copying conditions.  There is NO warranty.
+
+DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+DEB_HOST_ARCH      ?= $(shell dpkg-architecture -qDEB_HOST_ARCH)
+
+# Workaround for spurious error when building with gcc-4.4
+ifeq (,$(filter m68k alpha,$(DEB_HOST_ARCH)))
+#export DEB_CFLAGS_MAINT_APPEND := -Werror
+endif
+
+# always abort if there are any problems with the symbols file
+DPKG_GENSYMBOLS_CHECK_LEVEL = 4
+export DPKG_GENSYMBOLS_CHECK_LEVEL
+
+libpkg := libfreetype-infinality6
+
+dependency = $(libpkg) (>= 2.4.0)
+
+freetype_config_man := $(CURDIR)/debian/freetype-config.man
+freetype_config_sgml := $(CURDIR)/debian/freetype-config.man.sgml
+
+libdoc = FTL.TXT CHANGES TODO ft2faq.html
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	dh_auto_configure -- --without-bzip2 --libdir=/usr/lib/$(DEB_HOST_MULTIARCH)/freetype-infinality
+
+override_dh_auto_install:
+	dh_auto_install --destdir=$(CURDIR)/debian/tmp
+
+	## Install file in /etc/ld.so.conf.d, so that the libraries are found ##
+	install -dm755 debian/tmp/etc/ld.so.conf.d/
+	echo "/usr/lib/$(DEB_HOST_MULTIARCH)/freetype-infinality" > debian/tmp/etc/ld.so.conf.d/freetype-infinality-$(DEB_HOST_MULTIARCH).conf
+
+	## Remove files that don't get installed ##
+	# Source headers
+	rm -rv debian/tmp/usr/include
+	# Libtool files
+	rm -v debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/freetype-infinality/libfreetype.la
+	# Static library
+	rm -v debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/freetype-infinality/libfreetype.a
+	# pkg-config files
+	rm -v debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/freetype-infinality/pkgconfig/freetype2.pc
+	# aclocal files
+	rm -v debian/tmp/usr/share/aclocal/freetype2.m4
+	# remove non-versioned .so file
+	rm -v debian/tmp/usr/lib/$(DEB_HOST_MULTIARCH)/freetype-infinality/libfreetype.so
+	# remove freetype-config binary (for settings CFLAGS, LDFLAGS, etc)
+	rm -v debian/tmp/usr/bin/freetype-config
+
+override_dh_install:
+	dh_install --fail-missing
+
+override_dh_auto_clean:
+	dh_auto_clean
+	# Remove build objects
+	rm -rvf objs/*
+
+override_dh_installchangelogs:
+	dh_installchangelogs -pfreetype-infinality
+ifneq (,$(findstring $(libpkg), $(shell dh_listpackages)))
+	dh_installchangelogs -p$(libpkg) ChangeLog
+endif
+
+override_dh_makeshlibs:
+	dh_makeshlibs -V '$(dependency)'
+
+.PHONY: patch

@@ -1,0 +1,1 @@
+PRELOAD=1; if [ -f /etc/sysconfig/fonts ]; then . /etc/sysconfig/fonts; fi; A1=`arch`; A2=x86_64; if [ "${A1:0:1}" = "${A2:0:1}" -a ! "$PRELOAD" = "0" ]; then ADDED=`/bin/echo $LD_PRELOAD | grep "/usr/lib64/libfreetype.so.6" | wc -l`; if [ "$ADDED" = "0" ]; then export LD_PRELOAD=/usr/lib64/freetype-infinality/libfreetype.so.6.8.0:$LD_PRELOAD ; fi; fi

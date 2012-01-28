@@ -1,0 +1,7 @@
+freetype-2.1.7-backwards.compat.patch
+enable-gxvalid-otvalid.patch
+
+# Infinality patches
+freetype-add-subpixel-hinting-infinality-20111223-01.patch
+freetype-enable-subpixel-hinting-infinality-20100909-1.patch
+freetype-entire-infinality-patchset-20111223-01.patch

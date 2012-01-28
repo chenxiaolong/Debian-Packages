@@ -1,0 +1,11 @@
+# The following errors are present because the libraries are installed in a
+# subdirectory within the multiarch directory in /usr/lib
+libfreetype-infinality6: postinst-has-useless-call-to-ldconfig
+libfreetype-infinality6: postrm-has-useless-call-to-ldconfig
+libfreetype-infinality6: package-modifies-ld.so-search-path
+
+# Simply not true
+libfreetype-infinality6: latest-debian-changelog-entry-without-new-version
+
+# This is a non-official upload
+libfreetype-infinality6: new-package-should-close-itp-bug

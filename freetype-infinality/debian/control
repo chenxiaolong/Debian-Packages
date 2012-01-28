@@ -1,0 +1,31 @@
+Source: freetype-infinality
+Section: libs
+Priority: optional
+Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+#Uploaders: Anthony Fok <foka@debian.org>, Keith Packard <keithp@keithp.com>
+Build-Depends: bzip2, debhelper (>= 8.9.4), docbook-to-man, gettext (>= 0.10.36-2), libx11-dev, x11proto-core-dev, libz-dev, quilt
+Standards-Version: 3.9.2
+#Homepage: http://www.freetype.org
+Homepage: http://www.infinality.net
+
+Package: freetype-infinality
+Architecture: all
+Section: misc
+Depends: ${shlibs:Depends}, ${misc:Depends}, fontconfig-infinality, libfreetype-infinality6
+Pre-Depends: ${misc:Pre-Depends}
+Description: FreeType 2 font engine, with the Infinality patch set
+ The purpose of these patches is to provide the nicest font rendering of any
+ operating system. The second goal is to provide customization so that the
+ end user is able to adjust the settings to his or her taste.
+
+Package: libfreetype-infinality6
+Architecture: any
+Section: libs
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Multi-Arch: same
+Description: FreeType 2 font engine, with the Infinality patch set, shared library files
+ The purpose of these patches is to provide the nicest font rendering of any
+ operating system. The second goal is to provide customization so that the
+ end user is able to adjust the settings to his or her taste.
+

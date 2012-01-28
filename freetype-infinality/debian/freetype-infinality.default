@@ -1,0 +1,3 @@
+# Set to 'true' to enable the Infinality patched FreeType 2 font engine
+
+INFINALITY='true'

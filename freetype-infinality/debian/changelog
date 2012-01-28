@@ -1,0 +1,31 @@
+freetype-infinality (2.4.8-1) unstable; urgency=low
+
+  * Modify Debian freetype package to package the Infinality patch set
+  * debian/control
+    - Remove docs and demos
+    - Remove dev package
+  * debian/rules
+    - Remove docs and demos
+    - Remove explicit patch sections
+    - Disable treating warnings as errors (-Werror)
+    - Remove version lines
+    - Remove files that don't get installed from debian/tmp (commented)
+  * debian/source/format
+    - Created this file so that the Quilt patches work
+  * debian/patches/freetype-2.1.7-backwards.compat.patch
+    - Refreshed to use the standard "-p1" patching
+  * debian/README.Source
+    - Removed (content doesn't apply)
+  * debian/freetype-config.man.sgml
+    - Removed (no need for man page for a non-installed binary)
+  * Added lintian overrides (commented in respective files)
+  * Remove patches for freetype demos
+  * Remove debian patch for enabling subpixel rendering
+  * Reorganize structure since there's only one source package now
+  * Moved original freetype changelog to debian/changelog.freetype
+    - Works around lintian version checks (same as previous changelog version
+    - ...blah blah blah)
+      - (fails 'line too long' test)
+
+ -- Xiao-Long Chen <chenxiaolong@cxl.epac.to>  Sat, 28 Jan 2012 12:39:39 -0500
+
