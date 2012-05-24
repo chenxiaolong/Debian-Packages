@@ -1,3 +1,9 @@
+freetype-infinality (2.4.9-1) unstable; urgency=low
+
+  * Update to verion 2.4.9-20120403
+
+ -- Xiao-Long Chen <chenxiaolong@cxl.epac.to>  Thu, 24 May 2012 00:02:54 -0400
+
 freetype-infinality (2.4.8-1) unstable; urgency=low
 
   * Modify Debian freetype package to package the Infinality patch set

@@ -1,3 +1,2 @@
 usr/lib/*/freetype-infinality/*.so.*
 etc/ld.so.conf.d/freetype-infinality-*.conf
-debian/patches/infinality-settings.sh /etc/profile.d/

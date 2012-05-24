@@ -1,0 +1,29 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+%:
+	dh $@
+
+override_dh_auto_clean:
+	rm -vf infinality/changelog
+	dh_clean
+
+override_dh_auto_install:
+	#install -dm755 debian/fontconfig-infinality/etc/fonts/{conf.{avail,d},infinality/{conf.src,styles.conf.avail}}/
+	install -dm755 debian/fontconfig-infinality/etc/fonts/conf.avail/
+	install -dm755 debian/fontconfig-infinality/etc/fonts/conf.d/
+	install -dm755 debian/fontconfig-infinality/etc/fonts/infinality/conf.src/
+	install -dm755 debian/fontconfig-infinality/etc/fonts/infinality/styles.conf.avail/
+	install -m644 conf.avail/52-infinality.conf \
+		debian/fontconfig-infinality/etc/fonts/conf.avail/
+	install -m644 infinality/infinality.conf \
+		debian/fontconfig-infinality/etc/fonts/infinality/
+	install -m755 infinality/infctl.sh \
+		debian/fontconfig-infinality/etc/fonts/infinality/
+	cd infinality/ && find conf.src -type f -exec install -Dm644 {} ../debian/fontconfig-infinality/etc/fonts/infinality/{} ';' && cd ..
+	cd infinality/ && find styles.conf.avail -type d -exec install -dm755 ../debian/fontconfig-infinality/etc/fonts/infinality/{} ';' && cd ..
+	cd infinality/ && find styles.conf.avail -type l -exec cp -P {} ../debian/fontconfig-infinality/etc/fonts/infinality/{} ';' && cd ..
+	cp infinality/CHANGELOG infinality/changelog

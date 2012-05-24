@@ -1,8 +1,8 @@
-freetype-entire-infinality-patchset-20111223-01.patch
+freetype-entire-infinality-patchset-20120403-01.patch
 -------------------------------------------------------------------
 (excludes the TT subpixel patches, which are required )
 
-This should patch to a subpixel-patched Freetype 2.4.8.  Additional
+This should patch to a subpixel-patched Freetype 2.4.9.  Additional
 required files are also contained in the zipfile here:
 
 http://www.infinality.net/blog/infinality-freetype-patches/
@@ -42,6 +42,18 @@ have memory leaks, not compile, or render fonts in a way that you don't like.
 Either way, when you use this patch, you should recognize that it
 is ALPHA / BETA quality.  That said, I intend to run these patches on my
 personal system, so they had better be pretty stable!
+
+
+Changes for 2012-04-03:
+
+Fixes:
+
+ * Get rid of TT_CONFIG_OPTION_SUBPIXEL_HINTING_ADDITIONAL_TWEAKS 
+   and do this by default if TT_CONFIG_OPTION_SUBPIXEL_HINTING is enabled.
+ * Update to Freetype 2.4.9
+ * Fix sdl_ttf rendering
+ * Code cleanup
+ * Prevent crashes in OSX mode (thanks Markser)
 
 
 Changes for 2011-12-23:
@@ -271,11 +283,9 @@ Changes for 2010-09-14:
 
 
 
-
-
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/configure freetype-work/configure
---- freetype-subpixel/configure	2010-10-05 05:25:56.000000000 -0500
-+++ freetype-work/configure	2011-11-17 21:00:16.199774763 -0600
+--- freetype-subpixel/configure	2011-12-02 13:21:55.000000000 -0600
++++ freetype-work/configure	2012-04-02 19:51:46.423265336 -0500
 @@ -13,6 +13,8 @@
  # Call the `configure' script located in `builds/unix'.
  #
@@ -286,9 +296,9 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/configure 
  
  if test "x$GNUMAKE" = x; then
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/include/freetype/config/ftoption.h freetype-work/include/freetype/config/ftoption.h
---- freetype-subpixel/include/freetype/config/ftoption.h	2011-11-17 20:59:44.149885785 -0600
-+++ freetype-work/include/freetype/config/ftoption.h	2011-11-17 21:00:16.225773867 -0600
-@@ -473,6 +473,19 @@
+--- freetype-subpixel/include/freetype/config/ftoption.h	2012-04-02 19:32:04.868256202 -0500
++++ freetype-work/include/freetype/config/ftoption.h	2012-04-03 19:18:38.465997933 -0500
+@@ -473,6 +473,18 @@
  
  
    /*************************************************************************/
@@ -297,8 +307,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/include/fr
 +  /* all additional infinality patches, which are configured via env       */
 +  /* variables.                                                            */
 +  /*                                                                       */
-+  /*   This option requires TT_CONFIG_OPTION_SUBPIXEL_HINTING and          */
-+  /*   TT_CONFIG_OPTION_SUBPIXEL_HINTING_ADDITIONAL_TWEAKS to be           */
++  /*   This option requires TT_CONFIG_OPTION_SUBPIXEL_HINTING to           */
 +  /*   defined.                                                            */
 +  /*                                                                       */
 +#define FT_CONFIG_OPTION_INFINALITY_PATCHSET
@@ -310,7 +319,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/include/fr
    /****        S F N T   D R I V E R    C O N F I G U R A T I O N       ****/
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/include/freetype/ftoutln.h freetype-work/include/freetype/ftoutln.h
 --- freetype-subpixel/include/freetype/ftoutln.h	2011-04-12 17:25:07.000000000 -0500
-+++ freetype-work/include/freetype/ftoutln.h	2011-12-12 18:30:36.308161754 -0600
++++ freetype-work/include/freetype/ftoutln.h	2012-04-02 19:51:46.432265033 -0500
 @@ -349,6 +349,10 @@
    FT_Outline_Embolden( FT_Outline*  outline,
                         FT_Pos       strength );
@@ -323,8 +332,8 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/include/fr
    /*************************************************************************/
    /*                                                                       */
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/autofit/aflatin.c freetype-work/src/autofit/aflatin.c
---- freetype-subpixel/src/autofit/aflatin.c	2011-06-20 12:03:27.000000000 -0500
-+++ freetype-work/src/autofit/aflatin.c	2011-12-12 18:11:57.518724747 -0600
+--- freetype-subpixel/src/autofit/aflatin.c	2012-02-11 03:29:31.000000000 -0600
++++ freetype-work/src/autofit/aflatin.c	2012-04-02 19:51:46.442264696 -0500
 @@ -22,6 +22,7 @@
  
  #include "aflatin.h"
@@ -364,17 +373,6 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/autofi
  
      if ( dim == AF_DIMENSION_HORZ )
      {
-@@ -537,8 +561,8 @@
-     }
-     else
-     {
--      scale = scaler->y_scale;
--      delta = scaler->y_delta;
-+      scale = scaler->y_scale /* * 1.033*/;
-+      delta = scaler->y_delta /*- 16*/;
-     }
- 
-     axis = &metrics->axis[dim];
 @@ -556,7 +580,7 @@
      {
        AF_LatinAxis  Axis = &metrics->axis[AF_DIMENSION_VERT];
@@ -695,51 +693,9 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/autofi
    Exit:
      return error;
    }
-diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/autofit/afloader.c freetype-work/src/autofit/afloader.c
---- freetype-subpixel/src/autofit/afloader.c	2011-04-18 09:24:17.000000000 -0500
-+++ freetype-work/src/autofit/afloader.c	2011-11-28 21:51:34.373981498 -0600
-@@ -190,8 +190,8 @@
-         AF_Edge       edge2 = edge1 +
-                               axis->num_edges - 1; /* rightmost edge */
- 
--
--        if ( axis->num_edges > 1 && AF_HINTS_DO_ADVANCE( hints ) )
-+/* dont hint metrics - temporary until different hinting can be done */
-+        if ( /*FALSE &&*/ axis->num_edges > 1 && AF_HINTS_DO_ADVANCE( hints ) )
-         {
-           old_rsb = loader->pp2.x - edge2->opos;
-           old_lsb = edge1->opos;
-@@ -224,7 +224,8 @@
-           slot->lsb_delta = loader->pp1.x - pp1x_uh;
-           slot->rsb_delta = loader->pp2.x - pp2x_uh;
-         }
--        else
-+/* dont hint metrics - temporary until different hinting can be done */        
-+        else /*if (FALSE)*/
-         {
-           FT_Pos  pp1x = loader->pp1.x;
-           FT_Pos  pp2x = loader->pp2.x;
-@@ -410,6 +411,9 @@
- #endif
-       FT_Outline_Get_CBox( &gloader->base.outline, &bbox );
- 
-+  /*    slot->metrics.horiBearingX_o = bbox.xMin;   
-+      slot->metrics.width_o        = bbox.xMax - bbox.xMin;       */
-+      
-       bbox.xMin = FT_PIX_FLOOR( bbox.xMin );
-       bbox.yMin = FT_PIX_FLOOR( bbox.yMin );
-       bbox.xMax = FT_PIX_CEIL(  bbox.xMax );
-@@ -456,6 +460,7 @@
-       slot->metrics.vertAdvance = FT_MulFix( slot->metrics.vertAdvance,
-                                              metrics->scaler.y_scale );
- 
-+    /*  slot->metrics.horiAdvance_o = slot->metrics.horiAdvance;*/
-       slot->metrics.horiAdvance = FT_PIX_ROUND( slot->metrics.horiAdvance );
-       slot->metrics.vertAdvance = FT_PIX_ROUND( slot->metrics.vertAdvance );
- 
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/base/ftlcdfil.c freetype-work/src/base/ftlcdfil.c
 --- freetype-subpixel/src/base/ftlcdfil.c	2010-04-01 03:18:57.000000000 -0500
-+++ freetype-work/src/base/ftlcdfil.c	2011-11-30 20:05:45.371694287 -0600
++++ freetype-work/src/base/ftlcdfil.c	2012-04-02 19:51:46.459264118 -0500
 @@ -21,6 +21,9 @@
  #include FT_IMAGE_H
  #include FT_INTERNAL_OBJECTS_H
@@ -804,9 +760,32 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/base/f
        return FT_Err_Invalid_Argument;
  
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/base/ftobjs.c freetype-work/src/base/ftobjs.c
---- freetype-subpixel/src/base/ftobjs.c	2011-10-15 02:32:41.000000000 -0500
-+++ freetype-work/src/base/ftobjs.c	2011-11-17 21:00:16.231773659 -0600
-@@ -567,8 +567,27 @@
+--- freetype-subpixel/src/base/ftobjs.c	2012-02-11 03:29:31.000000000 -0600
++++ freetype-work/src/base/ftobjs.c	2012-04-03 19:22:51.435371339 -0500
+@@ -513,6 +513,22 @@
+   ft_lookup_glyph_renderer( FT_GlyphSlot  slot );
+ 
+ 
++#ifdef FT_CONFIG_OPTION_INFINALITY_PATCHSET   
++  static void
++  ft_glyphslot_enlarge_metrics( FT_GlyphSlot slot,
++                                FT_Render_Mode mode )
++  {
++    FT_Glyph_Metrics*  metrics = &slot->metrics;
++    FT_Pos enlarge_cbox = 0;
++    /* enlarge for grayscale rendering */
++    if ( mode == FT_RENDER_MODE_NORMAL ) enlarge_cbox = 64;
++
++    metrics->horiBearingX -= enlarge_cbox;
++    metrics->width += 2*enlarge_cbox;
++  }
++#endif /* FT_CONFIG_OPTION_INFINALITY_PATCHSET */
++
++
+ #ifdef GRID_FIT_METRICS
+   static void
+   ft_glyphslot_grid_fit_metrics( FT_GlyphSlot  slot,
+@@ -571,8 +587,27 @@
      FT_Bool       autohint = FALSE;
      FT_Module     hinter;
      TT_Face       ttface = (TT_Face)face;
@@ -834,7 +813,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/base/f
      if ( !face || !face->size || !face->glyph )
        return FT_Err_Invalid_Face_Handle;
  
-@@ -648,8 +667,22 @@
+@@ -652,8 +687,22 @@
      if ( autohint )
      {
        FT_AutoHinter_Service  hinting;
@@ -859,7 +838,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/base/f
        /* try to load embedded bitmaps first if available            */
        /*                                                            */
        /* XXX: This is really a temporary hack that should disappear */
-@@ -687,6 +720,10 @@
+@@ -691,6 +740,10 @@
      }
      else
      {
@@ -870,20 +849,24 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/base/f
        error = driver->clazz->load_glyph( slot,
                                           face->size,
                                           glyph_index,
-@@ -694,6 +731,10 @@
+@@ -698,6 +751,14 @@
        if ( error )
          goto Exit;
  
 +#ifdef FT_CONFIG_OPTION_INFINALITY_PATCHSET  
 +      setenv(c1, c2, 1);
++
++      /* fix for sdl_ttf */
++      FT_Render_Mode  mode = FT_LOAD_TARGET_MODE( load_flags );
++      ft_glyphslot_enlarge_metrics( slot, mode );
 +#endif
 +
        if ( slot->format == FT_GLYPH_FORMAT_OUTLINE )
        {
          /* check that the loaded outline is correct */
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/base/ftoutln.c freetype-work/src/base/ftoutln.c
---- freetype-subpixel/src/base/ftoutln.c	2010-06-27 08:03:58.000000000 -0500
-+++ freetype-work/src/base/ftoutln.c	2011-12-23 19:37:59.293160172 -0600
+--- freetype-subpixel/src/base/ftoutln.c	2012-02-29 06:37:28.000000000 -0600
++++ freetype-work/src/base/ftoutln.c	2012-04-02 19:51:46.464263948 -0500
 @@ -887,8 +887,30 @@
      FT_Angle    rotate, angle_in, angle_out;
      FT_Int      c, n, first;
@@ -916,17 +899,21 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/base/f
      if ( !outline )
        return FT_Err_Invalid_Argument;
  
-@@ -957,6 +979,9 @@
+@@ -957,7 +979,13 @@
          }
  
          outline->points[n].x = v_cur.x + strength + in.x;
 +#ifdef FT_CONFIG_OPTION_INFINALITY_PATCHSET         
-+        if ( !use_various_tweaks )
++        if (!use_various_tweaks)
 +#endif          
          outline->points[n].y = v_cur.y + strength + in.y;
++        
++        /* OSX ? */
++        /*  v_cur.y + FT_PIX_ROUND(strength) + in.y; */
  
          v_prev = v_cur;
-@@ -969,6 +994,99 @@
+         v_cur  = v_next;
+@@ -969,6 +997,99 @@
      return FT_Err_Ok;
    }
  
@@ -1028,7 +1015,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/base/f
  
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/base/ftsynth.c freetype-work/src/base/ftsynth.c
 --- freetype-subpixel/src/base/ftsynth.c	2010-09-11 01:28:32.000000000 -0500
-+++ freetype-work/src/base/ftsynth.c	2011-12-01 19:00:13.275375244 -0600
++++ freetype-work/src/base/ftsynth.c	2012-04-02 19:51:46.464263948 -0500
 @@ -87,7 +87,26 @@
      FT_Face     face    = slot->face;
      FT_Error    error;
@@ -1067,8 +1054,8 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/base/f
      slot->metrics.vertBearingX -= xstr / 2;
      slot->metrics.vertBearingY += ystr;
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth/ftsmooth.c freetype-work/src/smooth/ftsmooth.c
---- freetype-subpixel/src/smooth/ftsmooth.c	2011-05-29 23:46:55.000000000 -0500
-+++ freetype-work/src/smooth/ftsmooth.c	2011-12-23 19:38:36.591875446 -0600
+--- freetype-subpixel/src/smooth/ftsmooth.c	2012-02-26 13:45:05.000000000 -0600
++++ freetype-work/src/smooth/ftsmooth.c	2012-04-02 19:51:46.471263712 -0500
 @@ -26,6 +26,16 @@
  
  #include "ftsmerrs.h"
@@ -3482,12 +3469,25 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
 +  point * (float)(new_distance) / (float)(stem_distance) \
 +  + *translate_value * 12 - ( stems[main_stem].center * (float)(new_distance) \
 +  / (float)(stem_distance) - stems[main_stem].center)
-+
+ 
+-    return 0;
+-  }
 +#define proposed_translated_point(point) point + *translate_value * 12
-+
+ 
 +      center_offset = one_pixel / 2;   /* half pixel */
 +      modulus = one_pixel;            /* whole pixel */
-+
+ 
+-  /* sets render-specific mode */
+-  static FT_Error
+-  ft_smooth_set_mode( FT_Renderer  render,
+-                      FT_ULong     mode_tag,
+-                      FT_Pointer   data )
+-  {
+-    /* we simply pass it to the raster */
+-    return render->clazz->raster_class->raster_set_mode( render->raster,
+-                                                         mode_tag,
+-                                                         data );
+-  }
 +      /* Determine center_offset via known values */
 +      if (known_stem_values->stem_width >= 0)
 +      {
@@ -3523,7 +3523,15 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
 +      }
 +      else if ( strategy_auto_change_center_offset && ppem >= STEM_WIDTH_2_PPEM )
 +        center_offset = (one_pixel * ((((int)(stems[0].width + one_pixel / 2)) / one_pixel ) % 2) ) / 2;
-+
+ 
+-  /* transform a given glyph image */
+-  static FT_Error
+-  ft_smooth_transform( FT_Renderer       render,
+-                       FT_GlyphSlot      slot,
+-                       const FT_Matrix*  matrix,
+-                       const FT_Vector*  delta )
+-  {
+-    FT_Error  error = Smooth_Err_Ok;
 +      /* Snap to closest translate and scale values by default */
 +      if (valid_stems >= 1)
 +      {
@@ -3533,7 +3541,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
 +        if (delta < modulus / 2 ) *translate_value = ( - delta  ) / (columns_per_pixel * 4);  /* snap left */
 +        else *translate_value = (modulus -delta) / (columns_per_pixel * 4);      /* snap right */
 +      }
-+
+ 
 +      if (strategy_use_d_correction)
 +      {
 +        /* if the only stem is in the last 1/3 of glyph width, the advance is
@@ -3771,26 +3779,13 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
 +
 +        *scale_value = (float)(new_distance  + 0) / (float)(stem_distance  + 0 );
 +        *translate_value = *translate_value - ((float)(stems[main_stem].center * (float)new_distance) / (float)stem_distance - stems[main_stem].center) / 12;
- 
--    return 0;
--  }
++
 +        if (valid_stems == 2) *embolden_value = (64.0 / *scale_value - 64.0);
 +        if (valid_stems == 3) *embolden_value = (64.0 / *scale_value - 64.0) / 1.5;
 +      }
- 
++
 +      if (verbose) printf ("%lu stems:", valid_stems);
- 
--  /* sets render-specific mode */
--  static FT_Error
--  ft_smooth_set_mode( FT_Renderer  render,
--                      FT_ULong     mode_tag,
--                      FT_Pointer   data )
--  {
--    /* we simply pass it to the raster */
--    return render->clazz->raster_class->raster_set_mode( render->raster,
--                                                         mode_tag,
--                                                         data );
--  }
++
 +      if (valid_stems == 1 && verbose)
 +        printf ("1 stem:    bitmapwidth:%d glyphwidth:%f glyph_width:%f center:%f bearing:%f advance:%f lhadvance:%f stemwidth:%f %d %d",
 +                (width - 6) / columns_per_pixel,
@@ -3813,15 +3808,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
 +                (float)m_horiBearingX / 64.0,
 +                (float)m_horiAdvance / 64.0,
 +                (float)advance_stem_location / (float)one_pixel);
- 
--  /* transform a given glyph image */
--  static FT_Error
--  ft_smooth_transform( FT_Renderer       render,
--                       FT_GlyphSlot      slot,
--                       const FT_Matrix*  matrix,
--                       const FT_Vector*  delta )
--  {
--    FT_Error  error = Smooth_Err_Ok;
++
 +      if (strategy_bearing_correction)
 +      {
 +        /* Correct if negative bearings are made substantially worse (more than 1/3 a pixel) */
@@ -3834,7 +3821,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
 +          if (verbose) printf ("TRANSLATING -64 ");
 +        }
 +      }
- 
++
 +      if ( strategy_use_verdana_12_hack
 +        && strcasestr(slot->face->family_name, "Verdana")
 +        && ppem == 12
@@ -3905,15 +3892,16 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
 +                      float          gamma_correction_value)
    {
 -    FT_MEM_ZERO( cbox, sizeof ( *cbox ) );
+-
+-    if ( slot->format == render->glyph_format )
+-      FT_Outline_Get_CBox( &slot->outline, cbox );
 +    if ( gamma_correction_value != 1.0 )
 +    {
 +      FT_UInt   width   = (FT_UInt)bitmap->width;
 +      FT_UInt   height  = (FT_UInt)bitmap->rows;
 +      FT_Byte*  line = bitmap->buffer;
 +      float ppem = (float)slot->face->size->metrics.x_ppem;
- 
--    if ( slot->format == render->glyph_format )
--      FT_Outline_Get_CBox( &slot->outline, cbox );
++
 +      if ( !slot->face || !slot->face->size ) return;
 +
 +      if (ppem >= 5 )
@@ -3951,10 +3939,10 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
      FT_Outline*  outline = NULL;
 +    FT_Outline*  outline_orig = NULL;
      FT_BBox      cbox;
--    FT_UInt      width, height, pitch;
-+    FT_UInt      width=0, height=0, pitch=0, ppem;
+-    FT_Pos       width, height, pitch;
++    FT_Pos      width=0, height=0, pitch=0, ppem;
  #ifndef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
-     FT_UInt      height_org, width_org;
+     FT_Pos       height_org, width_org;
  #endif
 -    FT_Bitmap*   bitmap;
 -    FT_Memory    memory;
@@ -4396,7 +4384,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
 +      FT_Outline_Embolden( outline, embolden_value );
      }
      else
--      width  = (FT_UInt)( ( cbox.xMax - cbox.xMin ) >> 6 );
+-      width  = ( cbox.xMax - cbox.xMin ) >> 6;
 -
 -    if ( cbox.yMin < 0 && cbox.yMax > FT_INT_MAX + cbox.yMin )
      {
@@ -4411,13 +4399,13 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
 +      FT_Outline_Get_CBox( outline, &cbox );
 +
 +      /* Various hacks that need to be turned into a new rule set */
-+      if ( !autohinted 
++      /*if ( !autohinted 
 +        && use_known_settings_on_selected_fonts 
 +        && mode == FT_RENDER_MODE_LCD && slot->face->family_name  && slot->face->style_name 
 +        && ( strcasestr(slot->face->family_name, "Courier New" )
 +          && ( strcasestr(slot->face->style_name, "Regular" )
 +            || strcasestr(slot->face->style_name, "Italic" ) ) ) )
-+        FT_Outline_Embolden( outline, 24 );
++        FT_Outline_Embolden( outline, 24 );*/
 +
 +      if (!autohinted 
 +        && use_known_settings_on_selected_fonts 
@@ -4446,7 +4434,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
 +      FT_Outline_Copy(outline, outline_orig);
      }
 -    else
--      height = (FT_UInt)( ( cbox.yMax - cbox.yMin ) >> 6 );
+-      height = ( cbox.yMax - cbox.yMin ) >> 6;
  
 -    bitmap = &slot->bitmap;
 -    memory = render->root.memory;
@@ -4708,29 +4696,10 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/smooth
  #else /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
  
      /* render outline into bitmap */
-@@ -449,7 +3779,7 @@
- 
- 
-   FT_DEFINE_RENDERER(ft_smooth_lcd_renderer_class,
--  
-+
-       FT_MODULE_RENDERER,
-       sizeof( FT_RendererRec ),
- 
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truetype/ttgload.c freetype-work/src/truetype/ttgload.c
---- freetype-subpixel/src/truetype/ttgload.c	2011-12-23 19:40:19.001348135 -0600
-+++ freetype-work/src/truetype/ttgload.c	2011-12-23 19:27:37.964564475 -0600
-@@ -830,9 +830,51 @@
-       loader->pp4 = zone->cur[zone->n_points - 1];
-     }
- 
-+#ifdef FT_CONFIG_OPTION_INFINALITY_PATCHSET
-+    if  ( loader->exec->sph_tweak_flags & SPH_TWEAK_DEEMBOLDEN )
-+      FT_Outline_Embolden(&loader->gloader->current.outline, -24);
-+
-+    else if  ( loader->exec->sph_tweak_flags & SPH_TWEAK_EMBOLDEN )
-+      FT_Outline_Embolden(&loader->gloader->current.outline, 24);
-+#endif
+--- freetype-subpixel/src/truetype/ttgload.c	2012-04-02 19:32:04.893255356 -0500
++++ freetype-work/src/truetype/ttgload.c	2012-04-02 19:51:46.474263610 -0500
+@@ -833,6 +833,41 @@
      return TT_Err_Ok;
    }
  
@@ -4772,7 +4741,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
  
    /*************************************************************************/
    /*                                                                       */
-@@ -852,6 +894,54 @@
+@@ -852,6 +887,54 @@
      FT_Outline*     outline;
      FT_Int          n_points;
  
@@ -4827,7 +4796,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
  
      outline  = &gloader->current.outline;
      n_points = outline->n_points;
-@@ -905,14 +995,36 @@
+@@ -905,14 +988,36 @@
        FT_ARRAY_COPY( loader->zone.orus, loader->zone.cur,
                       loader->zone.n_points + 4 );
      }
@@ -4867,7 +4836,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
  
  
        for ( ; vec < limit; vec++ )
-@@ -1682,7 +1794,11 @@
+@@ -1682,7 +1787,11 @@
                                             glyph_index );
  
  #ifdef TT_CONFIG_OPTION_SUBPIXEL_HINTING
@@ -4881,9 +4850,9 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
        if ( widthp )
  #endif /* TT_CONFIG_OPTION_SUBPIXEL_HINTING */
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truetype/ttinterp.c freetype-work/src/truetype/ttinterp.c
---- freetype-subpixel/src/truetype/ttinterp.c	2011-12-23 19:46:15.342075740 -0600
-+++ freetype-work/src/truetype/ttinterp.c	2011-12-23 19:27:09.459546599 -0600
-@@ -6754,7 +6754,14 @@
+--- freetype-subpixel/src/truetype/ttinterp.c	2012-04-02 19:32:04.901255086 -0500
++++ freetype-work/src/truetype/ttinterp.c	2012-04-02 19:51:46.480263407 -0500
+@@ -6752,7 +6752,14 @@
        if ( ( org_dist ^ cvt_dist ) < 0 )
          cvt_dist = -cvt_dist;
      }
@@ -4899,7 +4868,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
      /* control value cut-in and round */
  
      if ( ( CUR.opcode & 4 ) != 0 )
-@@ -6811,7 +6818,13 @@
+@@ -6809,7 +6816,13 @@
                                   CUR.GS.minimum_distance, 64 );
        }
      }
@@ -4914,7 +4883,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
  #ifdef TT_CONFIG_OPTION_SUBPIXEL_HINTING
      if ( CUR.enhanced_mode                                                   &&
           ( CUR.sph_tweak_flags & SPH_TWEAK_ROUND_NONPIXEL_INLINE_MOVES ) )
-@@ -6834,6 +6847,11 @@
+@@ -6832,6 +6845,11 @@
          CUR_Func_move( &CUR.zp1, point, -( distance - cur_dist ) );
        }
      }
@@ -4926,7 +4895,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
  #endif /* TT_CONFIG_OPTION_SUBPIXEL_HINTING */
  
    Fail:
-@@ -7707,8 +7725,27 @@
+@@ -7726,8 +7744,27 @@
    Ins_GETINFO( INS_ARG )
    {
      FT_Long  K;
@@ -4955,7 +4924,7 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
      K = 0;
  
      /********************************/
-@@ -7809,7 +7846,14 @@
+@@ -7828,7 +7865,14 @@
        }
      }
  #endif /* TT_CONFIG_OPTION_SUBPIXEL_HINTING */
@@ -4972,9 +4941,9 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
    }
  
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truetype/ttsubpix.c freetype-work/src/truetype/ttsubpix.c
---- freetype-subpixel/src/truetype/ttsubpix.c	2011-12-23 19:49:27.948443055 -0600
-+++ freetype-work/src/truetype/ttsubpix.c	2011-12-23 19:49:42.707934810 -0600
-@@ -84,6 +84,49 @@
+--- freetype-subpixel/src/truetype/ttsubpix.c	2012-04-02 19:32:04.904254984 -0500
++++ freetype-work/src/truetype/ttsubpix.c	2012-04-02 19:51:46.484263272 -0500
+@@ -83,6 +83,49 @@
      int         ppem   = loader->size->metrics.x_ppem;
      FT_String*  style  = face->root.style_name;
  
@@ -5024,45 +4993,31 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
      /* Don't apply rules if style isn't set */
      if ( !face->root.style_name ) return;
  
-@@ -161,6 +204,19 @@
-         tt_size_ready_bytecode( loader->exec->size, FT_BOOL( loader->load_flags & FT_LOAD_PEDANTIC ) );        
-       }
-     }      
+@@ -166,6 +209,16 @@
+       TWEAK_RULES( TIMES_NEW_ROMAN_HACK );
+       TWEAK_RULES( COURIER_NEW_2_HACK );
+     }
 +
 +#ifdef FT_CONFIG_OPTION_INFINALITY_PATCHSET
 +    /* These tweaks require the TT interpreter to be on for this glyph */
-+    if (IS_HINTED( loader->load_flags ) && use_known_settings_on_selected_fonts )
++    if ( IS_HINTED( loader->load_flags ) && use_known_settings_on_selected_fonts )
 +    {
-+      TWEAK_RULES( TIMES_NEW_ROMAN_HACK );
-+      TWEAK_RULES( COURIER_NEW_2_HACK );
-+      
-+      if (sph_test_tweak( face, family, ppem, style, glyph_index, 
-+           COMPATIBLE_WIDTHS_Rules, COMPATIBLE_WIDTHS_RULES_SIZE ) ) 
++      if (sph_test_tweak( face, family, ppem, style, glyph_index,
++           COMPATIBLE_WIDTHS_Rules, COMPATIBLE_WIDTHS_RULES_SIZE ) )
 +        loader->exec->compatible_widths |= TRUE;
 +    }
 +#endif /* FT_CONFIG_OPTION_INFINALITY_PATCHSET */
    }
  
- #endif /* TT_CONFIG_OPTION_SUBPIXEL_HINTING_ADDITIONAL_TWEAKS */
+ #endif /* TT_CONFIG_OPTION_SUBPIXEL_HINTING */
 diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truetype/ttsubpix.h freetype-work/src/truetype/ttsubpix.h
---- freetype-subpixel/src/truetype/ttsubpix.h	2011-12-23 19:52:30.830145677 -0600
-+++ freetype-work/src/truetype/ttsubpix.h	2011-12-23 19:50:59.479291216 -0600
-@@ -55,6 +55,10 @@
- #define SPH_TWEAK_NO_CALL_AFTER_IUP           0x0800000
- #define SPH_TWEAK_SKIP_INLINE_DELTAS          0x1000000
+--- freetype-subpixel/src/truetype/ttsubpix.h	2012-04-02 19:32:04.906254916 -0500
++++ freetype-work/src/truetype/ttsubpix.h	2012-04-02 21:26:53.371622436 -0500
+@@ -567,7 +567,106 @@
  
-+#ifdef FT_CONFIG_OPTION_INFINALITY_PATCHSET
-+#define SPH_TWEAK_TIMES_NEW_ROMAN_HACK        0x4000000
-+#define SPH_TWEAK_COURIER_NEW_2_HACK          0x8000000
-+#endif
+ #endif /* TT_CONFIG_OPTION_SUBPIXEL_HINTING */
  
-   FT_LOCAL( FT_Bool )
-   sph_test_tweak( TT_Face         face,
-@@ -950,6 +954,149 @@
- 
- 
- #endif /* TT_CONFIG_OPTION_SUBPIXEL_HINTING_ADDITIONAL_TWEAKS */
-+
+-#endif /* __TTSUBPIX_H__ */
 +#ifdef FT_CONFIG_OPTION_INFINALITY_PATCHSET
 +  /* use compatible widths with these */
 +#define COMPATIBLE_WIDTHS_RULES_SIZE 32
@@ -5103,6 +5058,43 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
 +                   { "Verdana", 14, "Regular", 'm' },
 +                 };
 +
++#define X_SCALING_RULES_SIZE 24
++  SPH_ScaleRule  X_SCALING_Rules
++                   [X_SCALING_RULES_SIZE] =
++                 {
++                   { "Arial", 13, "Regular", L'л', .95 },
++                   { "Arial", 14, "Regular", 'm', .95 },
++                   { "Arial", 15, "Regular", L'л', .925 },
++                   { "Bitstream Vera Sans", 10, "Roman", 0, 1.1 },
++                   { "Bitstream Vera Sans", 12, "Roman", 0, 1.05},
++                   { "Bitstream Vera Sans", 16, "Roman", 0, 1.05 },
++                   { "Bitstream Vera Sans", 9, "Roman", 0, 1.05},
++                   { "DejaVu Sans", 10, "Book", 0, 1.1 },
++                   { "DejaVu Sans", 12, "Book", 0, 1.05 },
++                   { "Georgia", 10, "", 0, 1.05},
++                   { "Georgia", 11, "", 0, 1.1},
++                   { "Georgia", 12, "", 0, 1.025},
++                   { "Georgia", 13, "", 0, 1.05},
++                   { "Georgia", 16, "", 0, 1.05 },
++                   { "Georgia", 17, "", 0, 1.03 },
++                   { "Liberation Sans", 12, "Regular", 'm', 1.1 },
++                   { "Lucida Grande", 11, "Regular", 'm', 1.1 },
++                   { "Segoe UI", 14, "Regular", 'm', 1.05},
++                   { "Verdana", 10, "Regular", 0, 1.1 },
++                   { "Verdana", 12, "Regular", 'W', 1.05},
++                   { "Verdana", 12, "Regular", 'a', 1.05},
++                   { "Verdana", 13, "Regular", 'U', .90 },
++                   { "Verdana", 16, "Regular", 0, 1.05 },
++                   { "Verdana", 9, "Regular", 0, 1.05},
++                 };
++
++#define Y_SCALING_RULES_SIZE 1
++  SPH_ScaleRule  Y_SCALING_Rules
++                   [Y_SCALING_RULES_SIZE] =
++                 {
++                   { "-", 0, "", 0, 1.2 },
++                 };
++
 +
 +#if 0
 +
@@ -5123,88 +5115,9 @@ diff -Nur -x '*~' -x '*.rej' -x '*.orig' -x '*.SUP' freetype-subpixel/src/truety
 +
 +#endif
 +
-+#define X_SCALING_RULES_SIZE 24
-+  SPH_ScaleRule  X_SCALING_Rules
-+                   [X_SCALING_RULES_SIZE] =
-+                 {
-+                   { "Bitstream Vera Sans", 10, "Roman", 0, 1.1 },
-+                   { "Bitstream Vera Sans", 16, "Roman", 0, 1.05 },
-+                   { "Bitstream Vera Sans", 9, "Roman", 0, 1.05},
-+                   { "Bitstream Vera Sans", 12, "Roman", 0, 1.05},
-+                   { "DejaVu Sans", 10, "Book", 0, 1.1 },
-+                   { "DejaVu Sans", 12, "Book", 0, 1.05 },
-+                   { "Georgia", 10, "", 0, 1.05},
-+                   { "Georgia", 11, "", 0, 1.1},
-+                   { "Georgia", 12, "", 0, 1.025},
-+                   { "Georgia", 13, "", 0, 1.05},
-+                   { "Georgia", 16, "", 0, 1.05 },
-+                   { "Georgia", 17, "", 0, 1.03 },
-+                   { "Liberation Sans", 12, "Regular", 'm', 1.1 },
-+                   { "Lucida Grande", 11, "Regular", 'm', 1.1 },
-+                   { "Segoe UI", 14, "Regular", 'm', 1.05},
-+                   { "Verdana", 10, "Regular", 0, 1.1 },
-+                   { "Verdana", 13, "Regular", 'U', .90 },
-+                   { "Verdana", 16, "Regular", 0, 1.05 },
-+                   { "Verdana", 9, "Regular", 0, 1.05},
-+                   { "Verdana", 12, "Regular", 'a', 1.05},
-+                   { "Verdana", 12, "Regular", 'W', 1.05},
-+                   { "Arial", 13, "Regular", L'л', .95 },
-+                   { "Arial", 15, "Regular", L'л', .925 },
-+                   { "Arial", 14, "Regular", 'm', .95 },
-+
-+                 };
-+
-+#define Y_SCALING_RULES_SIZE 1
-+  SPH_ScaleRule  Y_SCALING_Rules
-+                   [Y_SCALING_RULES_SIZE] =
-+                 {
-+                   { "-", 0, "", 0, 1.2 },
-+                 };
-+
-+
-+#define TIMES_NEW_ROMAN_HACK_RULES_SIZE 12
-+  SPH_TweakRule  TIMES_NEW_ROMAN_HACK_Rules
-+                   [TIMES_NEW_ROMAN_HACK_RULES_SIZE] =
-+                 {
-+                   { "Times New Roman", 16, "Italic", '2' },
-+                   { "Times New Roman", 16, "Italic", '5' },
-+                   { "Times New Roman", 16, "Italic", '7' },
-+                   { "Times New Roman", 16, "Regular", '2' },
-+                   { "Times New Roman", 16, "Regular", '5' },
-+                   { "Times New Roman", 16, "Regular", '7' },
-+                   { "Times New Roman", 17, "Italic", '2' },
-+                   { "Times New Roman", 17, "Italic", '5' },
-+                   { "Times New Roman", 17, "Italic", '7' },
-+                   { "Times New Roman", 17, "Regular", '2' },
-+                   { "Times New Roman", 17, "Regular", '5' },
-+                   { "Times New Roman", 17, "Regular", '7' },
-+                 };
-+
-+
-+#define COURIER_NEW_2_HACK_RULES_SIZE 15
-+  SPH_TweakRule  COURIER_NEW_2_HACK_Rules
-+                   [COURIER_NEW_2_HACK_RULES_SIZE] =
-+                 {
-+                   { "Courier New", 10, "Regular", '2' },
-+                   { "Courier New", 11, "Regular", '2' },
-+                   { "Courier New", 12, "Regular", '2' },
-+                   { "Courier New", 13, "Regular", '2' },
-+                   { "Courier New", 14, "Regular", '2' },
-+                   { "Courier New", 15, "Regular", '2' },
-+                   { "Courier New", 16, "Regular", '2' },
-+                   { "Courier New", 17, "Regular", '2' },
-+                   { "Courier New", 18, "Regular", '2' },
-+                   { "Courier New", 19, "Regular", '2' },
-+                   { "Courier New", 20, "Regular", '2' },
-+                   { "Courier New", 21, "Regular", '2' },
-+                   { "Courier New", 22, "Regular", '2' },
-+                   { "Courier New", 23, "Regular", '2' },
-+                   { "Courier New", 24, "Regular", '2' },
-+                 };
-+
-+
 +#endif /* FT_CONFIG_OPTION_INFINALITY_PATCHSET */
 +
- #endif /* TT_CONFIG_OPTION_SUBPIXEL_HINTING */
++#endif /* TT_CONFIG_OPTION_SUBPIXEL_HINTING */
  
- #endif /* __TTSUBPIX_H__ */
+ 
+ /* END */

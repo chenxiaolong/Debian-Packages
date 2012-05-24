@@ -1,0 +1,37 @@
+diff -Nur freetype-subpixel/devel/ftoption.h freetype-subpixel-enabled/devel/ftoption.h
+--- freetype-subpixel/devel/ftoption.h	2012-04-03 19:27:40.739505910 -0500
++++ freetype-subpixel-enabled/devel/ftoption.h	2012-04-03 19:31:14.283223793 -0500
+@@ -577,9 +577,11 @@
+   /*   This option requires TT_CONFIG_OPTION_BYTECODE_INTERPRETER to be    */
+   /*   defined.                                                            */
+   /*                                                                       */
+-/* #define TT_CONFIG_OPTION_SUBPIXEL_HINTING */
++#define TT_CONFIG_OPTION_SUBPIXEL_HINTING
+ 
+ 
++  /*************************************************************************/
++  /*                                                                       */
+   /* If you define TT_CONFIG_OPTION_UNPATENTED_HINTING, a special version  */
+   /* of the TrueType bytecode interpreter is used that doesn't implement   */
+   /* any of the patented opcodes and algorithms.  The patents related to   */
+diff -Nur freetype-subpixel/include/freetype/config/ftoption.h freetype-subpixel-enabled/include/freetype/config/ftoption.h
+--- freetype-subpixel/include/freetype/config/ftoption.h	2012-04-02 19:32:04.868256202 -0500
++++ freetype-subpixel-enabled/include/freetype/config/ftoption.h	2012-04-02 19:32:41.479018477 -0500
+@@ -92,7 +92,7 @@
+   /* This is done to allow FreeType clients to run unmodified, forcing     */
+   /* them to display normal gray-level anti-aliased glyphs.                */
+   /*                                                                       */
+-/* #define FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
++#define FT_CONFIG_OPTION_SUBPIXEL_RENDERING
+ 
+ 
+   /*************************************************************************/
+@@ -577,7 +577,7 @@
+   /*   This option requires TT_CONFIG_OPTION_BYTECODE_INTERPRETER to be    */
+   /*   defined.                                                            */
+   /*                                                                       */
+-/* #define TT_CONFIG_OPTION_SUBPIXEL_HINTING */
++#define TT_CONFIG_OPTION_SUBPIXEL_HINTING
+ 
+ 
+   /*************************************************************************/

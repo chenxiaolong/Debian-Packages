@@ -1,7 +1,7 @@
-Infinality Patches - 2011-12-23
+Infinality Patches - 2012-04-03
 ======================================================
 
-This should patch without errors to Freetype 2.4.8.  See the files themselves 
+This should patch without errors to Freetype 2.4.9.  See the files themselves 
 for the changelog.  Visit infinality.net for more information and a 
 forum.
 
@@ -20,9 +20,9 @@ http://www.infinality.net/blog/infinality-freetype-patches/
 Patches
 =======
 
-freetype-add-subpixel-hinting-infinality-20111223-01.patch    - Subpixel hinting patches.  Apply first.
-freetype-enable-subpixel-hinting-infinality-20100909-1.patch  - Enable subpixel hinting.   Apply second.
-freetype-entire-infinality-patchset-20111223-01.patch         - All infinality enhancements.  Apply third.
+freetype-add-subpixel-hinting-infinality-20120403-01.patch    - Subpixel hinting patches.  Apply first.
+freetype-enable-subpixel-hinting-infinality-20120403-01.patch - Enable subpixel hinting.   Apply second.
+freetype-entire-infinality-patchset-20120403-01.patch         - All infinality enhancements.  Apply third.
 
 
 

@@ -1,0 +1,14 @@
+Source: fontconfig-infinality
+Section: fonts
+Priority: extra
+Maintainer: Xiao-Long Chen <chenxiaolong@cxl.epac.to>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.2
+Homepage: http://www.infinality.net
+
+Package: fontconfig-infinality
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, freetype-infinality
+Description: Configuration files for freetype-infinality
+ This package include FreeType2 configuration files for modifying settings
+ provided by the infinality patches.
