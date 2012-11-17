@@ -1,4 +1,4 @@
-source /etc/default/infinality
+source /etc/default/freetype-infinality
 
 DEB_HOST_MULTIARCH=$(dpkg-architecture -qDEB_HOST_MULTIARCH)
 

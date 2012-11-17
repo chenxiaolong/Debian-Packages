@@ -53,6 +53,12 @@ override_dh_auto_install:
 	# remove freetype-config binary (for settings CFLAGS, LDFLAGS, etc)
 	rm -v debian/tmp/usr/bin/freetype-config
 
+	## Install Infinality files ##
+	install -dm755 debian/tmp/etc/profile.d/
+	install -m644 debian/freetype-infinality.profile.d debian/tmp/etc/profile.d/freetype-infinality.sh
+	install -m644 debian/patches/infinality-settings.sh debian/tmp/etc/profile.d/
+
+
 override_dh_install:
 	dh_install --fail-missing
 
