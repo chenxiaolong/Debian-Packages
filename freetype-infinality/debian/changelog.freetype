@@ -1,3 +1,23 @@
+freetype (2.4.9-1) unstable; urgency=low
+
+  * New upstream release
+    - upstream fix for multiple vulnerabilities: CVE-2012-1126,
+      CVE-2012-1133, CVE-2012-1134, CVE-2012-1136, CVE-2012-1142,
+      CVE-2012-1144. and others.  Closes: #662864.
+    - update symbols file for a new symbol, ft_raccess_guess_table
+  * debian/patches-freetype/savannah-bug-35847.patch,
+    debian/patches-freetype/savannah-bug-35833.patch: pull two bugfixes from
+    upstream git on top of 2.4.9, to address regressions affecting
+    ghostscript.  Thanks to Till Kamppeter for pointing this out.
+  * push CPPFLAGS into CFLAGS for ft2demos, so our demos will be secure.
+    Closes: #663613.
+  * don't let a quiltrc override our QUILT_PATCHES settings in debian/rules.
+    Closes: #617217.
+  * Migrate debian/copyright to copyright-format 1.0, and fix up the upstream
+    URL.  Closes: #642059.
+
+ -- Steve Langasek <vorlon@debian.org>  Sat, 24 Mar 2012 23:35:16 +0000
+
 freetype (2.4.8-1) unstable; urgency=high
 
   * New upstream release
