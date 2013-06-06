@@ -1,3 +1,9 @@
+freetype-infinality (2.4.9-2) unstable; urgency=low
+
+  * Allow profile.d script to be parsed by sh (GH: #1)
+
+ -- Xiao-Long Chen <chenxiaolong@cxl.epac.to>  Thu, 06 Jun 2013 12:26:37 -0400
+
 freetype-infinality (2.4.9-1) unstable; urgency=low
 
   * Update to verion 2.4.9-20120403
